@@ -246,12 +246,13 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
-  function NewActionOnClick(EventoClick: TNotifyEvent): TAction;
+  function NewActionOnClick(EventoClick: TNotifyEvent; pImageIndex : Integer): TAction;
   var
     action : TAction;
   begin
     action := TAction.Create(nil);
     action.OnExecute := EventoClick;
+    action.ImageIndex := pImageIndex;
     Result := action;
   end;
 
@@ -262,9 +263,8 @@ procedure TForm1.FormCreate(Sender: TObject);
     for vCnt := 0 to pItemMenu.Count - 1 do
     begin
       if Assigned(pItemMenu[vCnt].OnClick) then
-        pItem.Action := NewActionOnClick(pItemMenu[vCnt].OnClick);
+        pItem.Action := NewActionOnClick(pItemMenu[vCnt].OnClick,  pItemMenu[vCnt].ImageIndex);
 
-      pItem.ImageIndex := Random(26);
 
       pItem.Caption := pItemMenu[vCnt].Caption ;
       pItemMenu[vCnt].Visible := false;

@@ -42,7 +42,6 @@ object Form1: TForm1
     ShowHint = True
     Spacing = 0
     VertMargin = 5
-    ExplicitTop = 513
   end
   object edtBuscarMenu: TButtonedEdit
     Tag = 3
@@ -73,6 +72,7 @@ object Form1: TForm1
     OnChange = edtBuscarMenuChange
   end
   object MmPrincipal: TMainMenu
+    Images = ImageList1
     Left = 67
     Top = 30
     object Cadastros1: TMenuItem
@@ -81,6 +81,7 @@ object Form1: TForm1
       object Parametros2: TMenuItem
         Caption = 'Par'#226'metros'
         Hint = 'Par'#226'metros do sistema'
+        ImageIndex = 0
         OnClick = Parametros2Click
       end
       object Configuraes1: TMenuItem
@@ -606,7 +607,7 @@ object Form1: TForm1
     Left = 64
     Top = 136
     Bitmap = {
-      494C01011B001D00140010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B001D00180010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000663300006633
       0000990000000000000000000000000000000000000000000000000000000000
