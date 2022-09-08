@@ -8,9 +8,13 @@ uses
   Vcl.ActnColorMaps, System.ImageList, Vcl.ImgList, System.Actions,
   Vcl.ActnList, Vcl.XPStyleActnCtrls, Vcl.ToolWin, Vcl.ActnCtrls, Vcl.ActnMenus,
   Vcl.PlatformDefaultStyleActnCtrls, Vcl.StdStyleActnCtrls, Vcl.StdCtrls,
-  Vcl.ExtCtrls, System.StrUtils;
+  Vcl.ExtCtrls, System.StrUtils,Vcl.Clipbrd;
 
 type
+  TObjMenu = class
+    Caminho: String;
+    Menu: TMenuItem;
+  end;
 
   TForm1 = class(TForm)
     MmPrincipal: TMainMenu;
@@ -174,12 +178,26 @@ type
     ImageList1: TImageList;
     XColorM: TXPColorMap;
     edtBuscarMenu: TButtonedEdit;
+    lbEndereco: TListBox;
     procedure Parametros2Click(Sender: TObject);
     procedure sairsistemaExecute(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure edtBuscarMenuChange(Sender: TObject);
+    procedure edtBuscarMenuEnter(Sender: TObject);
+    procedure edtBuscarMenuKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure edtBuscarMenuRightButtonClick(Sender: TObject);
+    procedure lbEnderecoDblClick(Sender: TObject);
+    procedure lbEnderecoKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure lbEnderecoMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Cidades1Click(Sender: TObject);
   private
     { Private declarations }
+    ListaMenu: TList<TObjMenu>;
+
+    procedure LocalizaMenu(pTituloMenu: String);
   public
     { Public declarations }
   end;
@@ -190,6 +208,52 @@ var
 implementation
 
 {$R *.dfm}
+function Inverter(Caminho : String) : String;
+{Inverte a ordem dos nomes do caminho}
+var
+  N,
+  I,
+  J       : Integer;
+  Str,
+  Montar,
+  Aux     : String;
+  Vetor   : Array [1..20] of String;
+begin
+  {Nessa parte é separado as palavras do caminho e atribui a um vetor}
+  I := 1;
+  for N := 1 to length(caminho) do begin
+    Str := Copy(Caminho,N,1);
+    if (Str <> '|') then
+      Montar := Montar + Str
+    else begin
+      Vetor[i] := Trim(Montar);
+      Montar   := '';
+      inc(I);
+    end;
+  end;
+  Vetor[I] := Montar;
+
+  {Nessa parte é invertido os valores do vetor}
+  if ((I mod 2) <> 0) then
+    J := Trunc(I/2)
+  else
+    J := Trunc(I/2) - 1;
+
+  for n := 0 to j do begin
+    Aux          := Vetor[N + 1];
+    Vetor[N + 1] := Vetor[I - N];
+    Vetor[I - N] := Aux;
+  end;
+  Caminho := '';
+
+  {Nessa parte é concatenado novamente}
+  for N := 1 to i do begin
+    Caminho := Caminho + Trim(Vetor[N]) + IfThen(N <> I,
+                                              ' | ',
+                                              '');
+  end;
+  Result := Caminho;
+end;
 
 Function TirarAcento(Texto:String):String;
 {Função com o objetivo de tirar acentos da string de
@@ -220,29 +284,61 @@ Begin
   End;
  End;
 End;
-procedure TForm1.edtBuscarMenuChange(Sender: TObject);
-  procedure LocalizaMenu(pNome: String);
-  var
-    vCnt : integer;
-    vItem : TActionClientItem;
-  begin
-
-//    ActionManager1.ActionBars[0].Items[0].
-    vItem := ActionManager1.FindItemByCaption(pNome);
-
-    if not Assigned(vItem) then
-      exit;
-
-    for vCnt := 0 to vItem.Items.Count - 1 do
-    begin
-      ShowMessage(vItem.Items[vCnt].Caption);
-
-    end;
-
-  end;
+procedure TForm1.Cidades1Click(Sender: TObject);
 begin
-  if Length(edtBuscarMenu.Text) > 2 then
-    LocalizaMenu(edtBuscarMenu.Text);
+  showmessage('cidade');
+end;
+
+procedure TForm1.edtBuscarMenuChange(Sender: TObject);
+var
+  I: Integer;
+begin
+  if (edtBuscarMenu.Text = '') then begin
+    lbEndereco.Visible := False;
+    Exit;
+  end;
+
+  if Length(edtBuscarMenu.Text) < 3 then
+    Exit;
+
+  LocalizaMenu(UpperCase(edtBuscarMenu.Text));
+  lbEndereco.Items.Clear;
+  for I := 0 to ListaMenu.Count - 1 do
+    lbEndereco.Items.Add(ListaMenu[I].Caminho);
+
+  lbEndereco.top := edtBuscarMenu.Top - 150;
+  lbEndereco.left := edtBuscarMenu.left;
+
+  lbEndereco.Visible := True;
+  lbEndereco.BringToFront;
+end;
+
+procedure TForm1.edtBuscarMenuEnter(Sender: TObject);
+begin
+  edtBuscarMenu.Clear;
+  lbEndereco.Clear;
+
+end;
+
+procedure TForm1.edtBuscarMenuKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) or (Key = VK_DOWN) then begin
+    if (lbEndereco.Count > 0) then begin
+      lbEndereco.SetFocus;
+      lbEndereco.ItemIndex := 0;
+    end;
+  end
+  else if (Key = VK_ESCAPE) then begin
+    edtBuscarMenu.Clear;
+    lbEndereco.Visible := False;
+  end;
+end;
+
+procedure TForm1.edtBuscarMenuRightButtonClick(Sender: TObject);
+begin
+  edtBuscarMenu.Clear;
+  lbEndereco.Visible := False;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -278,6 +374,189 @@ begin
   ListaItemMenu(MmPrincipal.Items,ActionManager1.ActionBars[0].Items[0].Items.Add);
   //Edit1.Height := 30;
   //Edit1.Font.Size := 14;
+end;
+
+procedure TForm1.lbEnderecoDblClick(Sender: TObject);
+var
+  ItemMenu : TComponent;
+begin
+  try
+    ItemMenu := ListaMenu[lbEndereco.ItemIndex].Menu;
+    if (ItemMenu Is TMenuItem) then begin
+      (ItemMenu As TMenuItem).OnClick(ItemMenu);
+      lbEndereco.Clear;
+      lbEndereco.Visible := False;
+      edtBuscarMenu.Clear;
+    end;
+  except
+  //
+  end;
+end;
+
+procedure TForm1.lbEnderecoKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Shift = [ssCtrl]) and
+     (Key = 67) and
+     (lbEndereco.Items.Count > 0) then
+    Clipboard.AsText := lbEndereco.Items[lbEndereco.ItemIndex]
+  else if (Key = VK_RETURN) and
+     (lbEndereco.Items.Count > 0) then
+    lbEnderecoDblClick(Sender);
+end;
+
+procedure TForm1.lbEnderecoMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+  APoint: TPoint;
+  Index: integer;
+begin
+  if Button = mbRight then
+  begin
+    APoint.X := X;
+    APoint.Y := Y;
+    Index := lbEndereco.ItemAtPos(APoint, True);
+    if Index > -1 then
+      lbEndereco.Selected[Index] := True;
+  end;
+end;
+
+procedure TForm1.LocalizaMenu(pTituloMenu: String);
+var
+  ItemMenu, ItemMenuParent: TMenuItem;
+  I, J, K       : Integer;
+  Caminho       : String;
+  objMenu       : TObjMenu;
+  Existe        : Boolean;
+begin
+  if Assigned(ListaMenu) then
+  begin
+    for I := ListaMenu.Count - 1 downto 0 do
+    begin
+      objMenu := ListaMenu[I];
+      FreeAndNil(objMenu);
+    end;
+    FreeAndNil(ListaMenu);
+  end;
+
+  ListaMenu := TList<TObjMenu>.Create;
+
+  for I := 0 to (ComponentCount - 1) do
+  begin
+    if (Components[I] is TMenuItem) then
+    begin
+      ItemMenu := TMenuItem(Components[I]);
+
+//      if (not ItemMenu.Visible) then
+//        Continue;
+
+      if (not ItemMenu.Enabled) then
+        Continue;
+
+      if (ItemMenu.Tag > 0) then
+        Continue;
+
+      if (ItemMenu.Name = '') then
+        Continue;
+
+      if not (ContainsText(TirarAcento(UpperCase(ItemMenu.Caption.Replace('&',''))), TirarAcento(pTituloMenu))) and
+         (Assigned(ItemMenu.OnClick) or
+          (ItemMenu.Count > 0)) then
+        Continue;
+
+      objMenu := nil;
+      objMenu := TObjMenu.Create;
+      objMenu.Menu := ItemMenu;
+
+      if Assigned(ItemMenu.OnClick) then
+      begin
+        Caminho := '';
+
+        while (ItemMenu.Parent.Caption <> '') do begin
+          Caminho := Caminho + IfThen(Caminho <> '',
+                                   ' | ',
+                                   '') + ItemMenu.Caption.Replace('&','');
+          ItemMenu := ItemMenu.Parent;
+        end;
+        Caminho := Caminho + IfThen(Caminho <> '',
+                                 ' | ',
+                                 '') + ItemMenu.Caption.Replace('&','');
+
+        Existe := False;
+        for J := 0 to ListaMenu.Count - 1 do
+        if Inverter(Caminho) = ListaMenu[J].Caminho then
+        begin
+          Existe := True;
+          Break;
+        end;
+
+        if Existe then
+        begin
+          FreeAndNil(objMenu);
+          Continue;
+        end;
+
+        objMenu.Caminho := Inverter(Caminho);
+        ListaMenu.Add(objMenu);
+      end
+      else
+      begin
+        for J := 0 to ItemMenu.Count - 1 do
+        begin
+          if (ItemMenu[J].Visible) and
+             (Assigned(ItemMenu[J].OnClick)) then
+          begin
+            if (not ItemMenu[J].Visible) then
+              Continue;
+
+            if (not ItemMenu[J].Enabled) then
+              Continue;
+
+            if (ItemMenu[J].Tag > 0) then
+              Continue;
+
+            if (ItemMenu[J].Name = '') then
+              Continue;
+
+            objMenu := nil;
+            objMenu := TObjMenu.Create;
+            objMenu.Menu := ItemMenu[J];
+
+            Caminho := '';
+            ItemMenuParent := ItemMenu[J];
+
+            while (ItemMenuParent.Parent.Caption <> '') do begin
+              Caminho := Caminho + IfThen(Caminho <> '',
+                                       ' | ',
+                                       '') + ItemMenuParent.Caption.Replace('&','');
+              ItemMenuParent := ItemMenuParent.Parent;
+            end;
+            Caminho := Caminho + IfThen(Caminho <> '',
+                                     ' | ',
+                                     '') + ItemMenuParent.Caption.Replace('&','');
+
+            Existe := False;
+            for K := 0 to ListaMenu.Count - 1 do
+            if Inverter(Caminho) = ListaMenu[K].Caminho then
+            begin
+              Existe := True;
+              Break;
+            end;
+            if Existe then
+            begin
+              FreeAndNil(objMenu);
+              Continue;
+            end;
+
+            objMenu.Caminho := Inverter(Caminho);
+            ListaMenu.Add(objMenu);
+          end;
+        end;
+      end;
+    end;
+
+  end;
+
 end;
 
 procedure TForm1.Parametros2Click(Sender: TObject);

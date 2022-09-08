@@ -64,12 +64,28 @@ object Form1: TForm1
     Font.Style = [fsBold]
     Images = ImageList1
     LeftButton.ImageIndex = 11
-    LeftButton.Visible = True
     ParentFont = False
     ParentShowHint = False
+    RightButton.ImageIndex = 11
+    RightButton.Visible = True
     ShowHint = True
     TabOrder = 1
     OnChange = edtBuscarMenuChange
+    OnEnter = edtBuscarMenuEnter
+    OnKeyDown = edtBuscarMenuKeyDown
+    OnRightButtonClick = edtBuscarMenuRightButtonClick
+  end
+  object lbEndereco: TListBox
+    Left = 170
+    Top = 127
+    Width = 627
+    Height = 147
+    ItemHeight = 13
+    TabOrder = 2
+    Visible = False
+    OnDblClick = lbEnderecoDblClick
+    OnKeyDown = lbEnderecoKeyDown
+    OnMouseDown = lbEnderecoMouseDown
   end
   object MmPrincipal: TMainMenu
     Images = ImageList1
@@ -214,6 +230,7 @@ object Form1: TForm1
         object Cidades1: TMenuItem
           Caption = 'Cidades'
           Hint = 'Cadastro de cidades'
+          OnClick = Cidades1Click
         end
         object Regioes1: TMenuItem
           Caption = 'Regi'#245'es'
@@ -607,7 +624,7 @@ object Form1: TForm1
     Left = 64
     Top = 136
     Bitmap = {
-      494C01011B001D00180010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011B001D001C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000007000000001002000000000000070
       0000000000000000000000000000000000000000000000000000663300006633
       0000990000000000000000000000000000000000000000000000000000000000
